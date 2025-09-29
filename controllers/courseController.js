@@ -48,8 +48,7 @@ export const getAllCourse = async (req, res) => {
 };
 // add to cart
 export const addTocart = async (req, res) => {
-  //   const product = req.body;
-  const { courseId } = req.body;
+  const { courseId, qty } = req.body;
   if (!courseId) {
     return res
       .status(404)
@@ -70,7 +69,7 @@ export const addTocart = async (req, res) => {
         .status(201)
         .json({ success: true, message: "product qty increased" });
     }
-    const newProduct = new cartModel({ courseId, qty: 1 });
+    const newProduct = new cartModel({ courseId, qty });
     await newProduct.save();
     return res
       .status(201)
@@ -116,13 +115,14 @@ export const increseQuantity = async (req, res) => {
       .json({ success: false, message: "id is required to increament" });
   }
   try {
-    const product = await cartModel.findOne({ courseId });
+    const product = await cartModel.findOne({ courseId: courseId });
+    console.log("product increment", product);
     if (!product) {
       return res
         .status(404)
         .json({ success: false, message: "product not found in the cart" });
     }
-    product.qty += 1;
+    // product.qty += 1;
     await product.save();
     return res
       .status(200)
@@ -170,8 +170,13 @@ export const getAllCartItems = async (req, res) => {
     const cartItems = await cartModel
       .find()
       .populate("courseId", "title imgUrl discountedPrice");
-    if (!cartItems || cartItems.length === 0) {
+    if (!cartItems) {
       return res.status(404).json({ success: false, message: "Cart is empty" });
+    }
+    if (cartItems.length === 0) {
+      return res
+        .status(200)
+        .json({ success: false, message: "Cart is empty", cartData: [] });
     }
     return res.status(200).json({
       success: true,
