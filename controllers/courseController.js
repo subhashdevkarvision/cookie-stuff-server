@@ -4,7 +4,6 @@ import { courserModel } from "../models/coursesModel.js";
 export const addNewCourse = async (req, res) => {
   const course = req.body;
   const file = req.file;
-  console.log(file);
   if (file) {
     req.body.imgUrl = `uploads/${file.filename}`;
   }
@@ -23,9 +22,7 @@ export const addNewCourse = async (req, res) => {
     return res.status(201).json({ success: true, message: "new course added" });
   } catch (error) {
     console.log(error);
-    res
-      .status(500)
-      .json({ success: false, message: "Server error", error: err.message });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 //  get courses
@@ -46,9 +43,33 @@ export const getAllCourse = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// get course by id
+export const getCourseById = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    if (!courseId) {
+      return res
+        .status(404)
+        .json({ success: false, message: "id is required to get course" });
+    }
+    const course = await courserModel.findById(courseId);
+    if (!course) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Course is not available" });
+    }
+    return res
+      .status(200)
+      .json({ success: true, message: "Course fethced successfully", course });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
 // add to cart
 export const addTocart = async (req, res) => {
-  const { courseId, qty } = req.body;
+  const { courseId } = req.body;
   if (!courseId) {
     return res
       .status(404)
@@ -61,15 +82,7 @@ export const addTocart = async (req, res) => {
         .status(404)
         .json({ success: false, message: "course not found" });
     }
-    const exstingProduct = await cartModel.findOne({ courseId });
-    if (exstingProduct) {
-      exstingProduct.qty += 1;
-      await exstingProduct.save();
-      return res
-        .status(201)
-        .json({ success: true, message: "product qty increased" });
-    }
-    const newProduct = new cartModel({ courseId, qty });
+    const newProduct = new cartModel({ courseId, qty: 1 });
     await newProduct.save();
     return res
       .status(201)
@@ -116,13 +129,12 @@ export const increseQuantity = async (req, res) => {
   }
   try {
     const product = await cartModel.findOne({ courseId: courseId });
-    console.log("product increment", product);
     if (!product) {
       return res
         .status(404)
         .json({ success: false, message: "product not found in the cart" });
     }
-    // product.qty += 1;
+    product.qty += 1;
     await product.save();
     return res
       .status(200)

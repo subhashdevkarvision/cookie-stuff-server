@@ -5,6 +5,7 @@ import {
   decrementQuantity,
   getAllCartItems,
   getAllCourse,
+  getCourseById,
   increseQuantity,
   removeFromCart,
 } from "../controllers/courseController.js";
@@ -13,6 +14,7 @@ const courseRouter = express.Router();
 // courses router
 courseRouter.post("/add", upload.single("img"), addNewCourse);
 courseRouter.get("/course", getAllCourse);
+courseRouter.get("/course/:courseId", getCourseById);
 
 // cart router
 courseRouter.get("/cart", getAllCartItems);

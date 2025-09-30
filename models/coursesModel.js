@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
 const courserSchema = mongoose.Schema({
-  //   id: { type: Number, required: true },
   imgUrl: { type: String, required: true },
   title: { type: String, required: true },
   access: { type: String },
