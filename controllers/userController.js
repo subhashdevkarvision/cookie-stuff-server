@@ -1,15 +1,11 @@
 import { userModel } from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { cartModel } from "../models/cartModel.js";
 
 // register user
 export const registerUser = async (req, res) => {
   const { fullName, email, password } = req.body;
-  if (!fullName || !email || !password) {
-    return res
-      .status(404)
-      .json({ success: false, message: "All Fields Required" });
-  }
   try {
     const exstingUser = await userModel.findOne({ email });
     if (exstingUser) {
@@ -18,7 +14,6 @@ export const registerUser = async (req, res) => {
         .json({ success: false, message: "user is already available" });
     }
     const hashPassword = await bcrypt.hash(password, 10);
-    console.log(hashPassword);
     const newUser = await userModel.create({
       fullName,
       email,
@@ -35,17 +30,12 @@ export const registerUser = async (req, res) => {
 // login user
 export const login = async (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) {
-    return res
-      .status(404)
-      .json({ success: false, message: "All fields required" });
-  }
   try {
     const user = await userModel.findOne({ email });
-    if (!email) {
+    if (!user) {
       return res
         .status(404)
-        .json({ success: false, message: "User not found" });
+        .json({ success: false, message: "Incorrect Email" });
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -56,15 +46,53 @@ export const login = async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_KEY, {
       expiresIn: "7d",
     });
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "Production",
-      sameSite: process.env.NODE_ENV === "Production" ? "none" : "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+    return res.status(200).json({
+      success: true,
+      message: "Login Successfully",
+      authenticateKey: token,
     });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// get user data
+export const getUserData = async (req, res) => {
+  const { id } = req.user;
+  if (!id) {
     return res
-      .status(200)
-      .json({ success: true, message: "Login Successfully" });
+      .status(404)
+      .json({ success: false, message: "token id not found" });
+  }
+  try {
+    const user = await userModel.findById(id);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "user not found" });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "Login successfully",
+      userData: user,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// get user cart
+export const getUserCart = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const userCart = await cartModel
+      .find({ userId })
+      .populate("courseId", "title imgUrl discountedPrice");
+    return res.status(200).json({
+      success: true,
+      message: "cart fetched successfully",
+      cartData: userCart.length > 0 ? userCart : [],
+    });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
