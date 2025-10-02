@@ -85,7 +85,7 @@ export const decrementQuantity = async (req, res) => {
         .status(200)
         .json({ success: true, message: "decreamented the quantity" });
     } else {
-      await cartModel.findOneAndDelete({ courseId });
+      await cartModel.findOneAndDelete({ courseId, userId });
       return res
         .status(200)
         .json({ success: true, message: "item removed from cart" });
