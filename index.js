@@ -6,9 +6,11 @@ import "dotenv/config";
 import cookieParser from "cookie-parser";
 import userRouter from "./Routes/userRouter.js";
 import cartRouter from "./routes/cartRouter.js";
+import paymentRouter from "./routes/paymentRouter.js";
+import webhookRouter from "./routes/webhookRouter.js";
 const app = express();
 const PORT = 4000;
-
+app.use("/checkout/webhook", webhookRouter);
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static("public"));
@@ -18,9 +20,10 @@ connectDb();
 app.use("/courses", courseRouter);
 app.use("/cart", cartRouter);
 app.use("/api", userRouter);
-// app.use("/", (req, res) => {
-//   res.send("api is running ");
-// });
+app.use("/checkout", paymentRouter);
+app.use("/", (req, res) => {
+  res.send("api is running ");
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
