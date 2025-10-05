@@ -10,9 +10,6 @@ import { validateFields, validateParams } from "../middleware/validation.js";
 import userAuth from "../middleware/userAuth.js";
 
 const cartRouter = express.Router();
-
-// cart router
-// cartRouter.get("/", getAllCartItems);
 cartRouter.post(
   "/add-to-cart",
   validateFields(["courseId"]),

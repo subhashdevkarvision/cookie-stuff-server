@@ -6,7 +6,6 @@ export const checkoutSession = async (req, res) => {
   try {
     const { cartItems } = req.body;
     const userId = req.user.id;
-    console.log(cartItems);
     const lineItems = cartItems.map((item) => ({
       price_data: {
         currency: "inr",

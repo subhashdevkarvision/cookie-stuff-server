@@ -4,6 +4,7 @@ const orderSchema = mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "user", required: true },
   cartItems: [
     {
+      _id: false,
       courseId: { type: mongoose.Schema.Types.ObjectId, ref: "course" },
       qty: Number,
     },
@@ -14,7 +15,7 @@ const orderSchema = mongoose.Schema({
     enum: ["Paid", "Pending", "Failed"],
     default: "Pending",
   },
-  stripeSessionId: { type: String, required: true },
+  stripePaymentIntentId: { type: String },
 });
 
 const orderModel = mongoose.model("order", orderSchema);
